@@ -347,7 +347,7 @@ methodmap Socket < Handle {
 	 *
 	 * @return        1 on success
 	 */
-	public static int GetHostName(char[] dest, int destLen);
+	public static native int GetHostName(char[] dest, int destLen);
 
 	/**
 	 * Returns whether a socket is connected or not.
