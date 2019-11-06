@@ -11,6 +11,6 @@ Dependencies for building
 Building on Windows
 -------------------
 Set the following environment variables on your system:
- * `SOURCEMOD` - path to SourceMod (>= 1.5.x)
- * `BOOST155` - path to boost libraries (>= 1.5.5)
+ * `SOURCEMOD` - path to SourceMod (>= 1.5.x)  
+ * `BOOST155` - path to boost libraries (>= 1.5.5)  
  ~~* `MSINTTYPES` - path to latest version of msinttypes~~ (Replaced "stdlib.h" with <cstdlib>)
