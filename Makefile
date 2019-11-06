@@ -1,7 +1,9 @@
 # makefile
 
-SMSDK = /home/m/build/sourcemod-1-0
-SOURCEMM = /home/m/build/mmsource-1-4
+# SMSDK = /home/m/build/sourcemod-1-0
+SMSDK = G:/Documents/SMBuild/sourcemod
+# SOURCEMM = /home/m/build/mmsource-1-4
+SOURCEMM = G:/Documents/SMBuild/mmsource-1.10
 
 PROJECT = socket
 
@@ -20,8 +22,8 @@ C_DEBUG_FLAGS = -g -ggdb3
 CPP = gcc
 
 LINK = -lpthread -Wl,-Bstatic -static-libgcc -lboost_thread -lboost_system -lstdc++ -Wl,-Bdynamic
-INCLUDE = -I. -I$(SOURCEMM) -I$(SOURCEMM)/sourcehook -I$(SOURCEMM)/sourcemm \
-	-I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions
+INCLUDE = -I. -I$(SOURCEMM) -I$(SOURCEMM)/core-legacy/sourcehook -I$(SOURCEMM)/core-legacy \
+	-I$(SMSDK)/public -I$(SMSDK)/sourcepawn/include -I$(SMSDK)/public/extensions
 
 CFLAGS = -D_LINUX -DSOURCEMOD_BUILD -Wall -fPIC -m32
 CPPFLAGS =

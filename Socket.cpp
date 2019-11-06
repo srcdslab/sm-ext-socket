@@ -163,7 +163,7 @@ bool Socket<SocketType>::Bind(const char* hostname, uint16_t port, bool async) {
 		}
 
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		if (resolver) delete resolver;
 		if (handlerLock) delete handlerLock;
 	}
@@ -230,11 +230,11 @@ bool Socket<SocketType>::Connect(const char* hostname, uint16_t port, bool async
 
 			if (error) throw boost::system::system_error(error);
 
-			ReceiveHandler(new char[16384], 16384, 0, boost::system::posix_error::make_error_code(boost::system::posix_error::success), new boost::shared_lock<boost::shared_mutex>(handlerMutex));
+			ReceiveHandler(new char[16384], 16384, 0, boost::system::errc::make_error_code(boost::system::errc::success), new boost::shared_lock<boost::shared_mutex>(handlerMutex));
 		}
 
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		if (resolver) delete resolver;
 		if (handlerLock) delete handlerLock;
 	}
@@ -282,7 +282,7 @@ void Socket<SocketType>::ConnectPostConnectHandler(typename SocketType::resolver
 			}
 		} // ~lock
 
-		ReceiveHandler(new char[16384], 16384, 0, boost::system::posix_error::make_error_code(boost::system::posix_error::success), handlerLock);
+		ReceiveHandler(new char[16384], 16384, 0, boost::system::errc::make_error_code(boost::system::errc::success), handlerLock);
 		
 		delete resolver;
 			
@@ -296,7 +296,7 @@ void Socket<SocketType>::ConnectPostConnectHandler(typename SocketType::resolver
 			}
 		} // ~lock
 
-		ConnectPostResolveHandler(resolver, endpointIterator, boost::system::posix_error::make_error_code(boost::system::posix_error::success), handlerLock);
+		ConnectPostResolveHandler(resolver, endpointIterator, boost::system::errc::make_error_code(boost::system::errc::success), handlerLock);
 			
 		return;
 	}
@@ -321,7 +321,7 @@ bool Socket<SocketType>::Disconnect() {
 		socket->close();
 
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 	}
 
 	return false;
@@ -371,7 +371,7 @@ bool Socket<tcp>::Listen() {
 											  handlerLock));
 
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		if (handlerLock) delete handlerLock;
 		if (nextAsioSocket) delete nextAsioSocket;
 	}
@@ -393,7 +393,7 @@ void Socket<tcp>::ListenIncomingHandler(tcp::socket* newAsioSocket, const boost:
 			newSocket->socket = newAsioSocket;
 			callbackHandler.AddCallback(new Callback(CallbackEvent_Incoming, this, newSocket, newAsioSocket->remote_endpoint()));
 
-			newSocket->ReceiveHandler(new char[16384], 16384, 0, boost::system::posix_error::make_error_code(boost::system::posix_error::success), new boost::shared_lock<boost::shared_mutex>(newSocket->handlerMutex));
+			newSocket->ReceiveHandler(new char[16384], 16384, 0, boost::system::errc::make_error_code(boost::system::errc::success), new boost::shared_lock<boost::shared_mutex>(newSocket->handlerMutex));
 
 			tcp::socket* nextAsioSocket = new tcp::socket(*socketHandler.ioService);
 
@@ -455,7 +455,7 @@ bool Socket<SocketType>::Send(const std::string& data, bool async) {
 		}
 
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		if (buf) delete[] buf;
 		if (handlerLock) delete handlerLock;
 	}
@@ -532,7 +532,7 @@ bool Socket<udp>::SendTo(const std::string& data, const char* hostname, uint16_t
 		}
 
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		if (resolver) delete resolver;
 		if (buf) delete[] buf;
 		if (handlerLock) delete handlerLock;
@@ -587,7 +587,7 @@ void Socket<SocketType>::SendToPostSendHandler(typename SocketType::resolver* re
 		}
 
 	} else if (endpointIterator != typename SocketType::resolver::iterator()) {
-		SendToPostResolveHandler(resolver, endpointIterator, buf, bufLen, boost::system::posix_error::make_error_code(boost::system::posix_error::success), handlerLock);
+		SendToPostResolveHandler(resolver, endpointIterator, buf, bufLen, boost::system::errc::make_error_code(boost::system::errc::success), handlerLock);
 		return;
 		
 	} else {
@@ -710,7 +710,7 @@ bool Socket<SocketType>::SetOption(SM_SocketOption so, int value, bool lock) {
 
 		if (l) delete l;
 		return true;
-	} catch (std::exception& e) {
+	} catch (std::exception&) {
 		if (l) delete l;
 		return false;
 	}

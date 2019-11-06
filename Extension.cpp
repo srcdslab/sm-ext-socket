@@ -440,25 +440,38 @@ cell_t SocketGetHostName(IPluginContext *pContext, const cell_t *params) {
 }
 
 const sp_nativeinfo_t smsock_natives[] = {
-	{"SocketIsConnected",		SocketIsConnected},
+	{"SocketCreate",                    SocketCreate},
+	{"SocketBind",                      SocketBind},
+	{"SocketConnect",                   SocketConnect},
+	{"SocketDisconnect",                SocketDisconnect},
+	{"SocketListen",                    SocketListen},
+	{"SocketSend",                      SocketSend},
+	{"SocketSendTo",                    SocketSendTo},
+	{"SocketSetOption",                 SocketSetOption},
+	{"SocketSetReceiveCallback",        SocketSetReceiveCallback},
+	{"SocketSetSendqueueEmptyCallback", SocketSetSendqueueEmptyCallback},
+	{"SocketSetDisconnectCallback",     SocketSetDisconnectCallback},
+	{"SocketSetErrorCallback",          SocketSetErrorCallback},
+	{"SocketSetArg",                    SocketSetArg},
+	{"SocketGetHostName",               SocketGetHostName},
+	{"SocketIsConnected",               SocketIsConnected},
 
-	{"SocketCreate",			SocketCreate},
-	{"SocketBind",				SocketBind},
-	{"SocketConnect",			SocketConnect},
-	{"SocketDisconnect",		SocketDisconnect},
-	{"SocketListen",			SocketListen},
-	{"SocketSend",				SocketSend},
-	{"SocketSendTo",			SocketSendTo},
-	{"SocketSetOption",			SocketSetOption},
+	// Transitional syntax support.
+	{"Socket.Socket",                   SocketCreate},
+	{"Socket.Bind",                     SocketBind},
+	{"Socket.Connect",                  SocketConnect},
+	{"Socket.Disconnect",               SocketDisconnect},
+	{"Socket.Listen",                   SocketListen},
+	{"Socket.Send",                     SocketSend},
+	{"Socket.SendTo",                   SocketSendTo},
+	{"Socket.SetOption",                SocketSetOption},
+	{"Socket.SetReceiveCallback",       SocketSetReceiveCallback},
+	{"Socket.SetSendqueueEmptyCallback",SocketSetSendqueueEmptyCallback},
+	{"Socket.SetDisconnectCallback",    SocketSetDisconnectCallback},
+	{"Socket.SetErrorCallback",         SocketSetErrorCallback},
+	{"Socket.SetArg",                   SocketSetArg},
+	{"Socket.GetHostName",              SocketGetHostName},
+	{"Socket.Connected.get",            SocketIsConnected},
 
-	{"SocketSetReceiveCallback",		SocketSetReceiveCallback},
-	{"SocketSetSendqueueEmptyCallback",	SocketSetSendqueueEmptyCallback},
-	{"SocketSetDisconnectCallback",		SocketSetDisconnectCallback},
-	{"SocketSetErrorCallback",			SocketSetErrorCallback},
-
-	{"SocketSetArg",			SocketSetArg},
-	
-	{"SocketGetHostName",		SocketGetHostName},
-
-	{NULL,						NULL},
+	{NULL,                              NULL},
 };
