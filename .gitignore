@@ -16,3 +16,4 @@ a.out
 *.tlog
 msvc10/Release/socket.tlog/
 Debug/
+msvc10/Release/socket.vcxproj.FileListAbsolute.txt
