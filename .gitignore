@@ -13,5 +13,6 @@ a.out
 *.lib
 *.exp
 *.pdb
+*.tlog
 Release/socket.tlog
 Debug/
