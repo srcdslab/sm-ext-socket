@@ -14,5 +14,5 @@ a.out
 *.exp
 *.pdb
 *.tlog
-Release/socket.tlog
+msvc10/Release/socket.tlog
 Debug/
