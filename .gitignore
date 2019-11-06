@@ -7,8 +7,11 @@ a.out
 *.oc
 *.ox
 *.a
-*.so
 *~
-Release/
+*.obj
+*.log
+*.lib
+*.exp
+*.pdb
+Release/socket.tlog
 Debug/
-
