@@ -6,7 +6,7 @@ Dependencies for building
 -------------------------
  * [SourceMod](https://github.com/alliedmodders/sourcemod)
  * [Boost](http://www.boost.org/)
- * [msinttypes](https://code.google.com/p/msinttypes/)
+ * ~~[msinttypes](https://code.google.com/p/msinttypes/)~~
 
 Building on Windows
 -------------------
