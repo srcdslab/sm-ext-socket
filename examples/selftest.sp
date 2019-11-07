@@ -5,7 +5,10 @@
 #include <sourcemod>
 #include <socket>
 
-public Plugin:myinfo = {
+#pragma newdecls required
+#pragma semicolon 1
+
+public Plugin myinfo = {
 	name = "socket extension selftest",
 	author = "Player",
 	description = "basic functionality testing",
@@ -13,15 +16,15 @@ public Plugin:myinfo = {
 	url = "http://www.player.to/"
 };
 
-new goalsReached;
-new trapsReached;
+int g_iGoalsReached;
+int g_iTrapsReached;
 
-new test;
-public OnGameFrame() {
-	if (test == 0) {
-		test++;
+int g_iTest;
+public void OnGameFrame() {
+	if (g_iTest == 0) {
+		g_iTest++;
 
-		SocketSetOption(INVALID_HANDLE, DebugMode, 1);
+		view_as<Socket>(null).SetOption(DebugMode, 1);
 
 		selfTest1();
 	}
@@ -44,25 +47,25 @@ public OnGameFrame() {
  * - A socket which tries to connect to the listening socket and receives data
  * - the child socket which sends the data
  */
-selfTest1() {
-	goalsReached = 0;
-	trapsReached = 0;
+void selfTest1() {
+	g_iGoalsReached = 0;
+	g_iTrapsReached = 0;
 	CreateTimer(3.0, selfTest1Terminate);
 	PrintToServer("* |socket selftest| test #1 running");
 
-	new Handle:socket = SocketCreate(SOCKET_TCP, OnSocketErrorTrap);
+	Socket socket = new Socket(SOCKET_TCP, OnSocketErrorTrap);
 
-	SocketSetOption(socket, SocketReuseAddr, 1);
+	socket.SetOption(SocketReuseAddr, 1);
 
-	SocketBind(socket, "0.0.0.0", 12345);
-	SocketListen(socket, Test1_OnListenSocketIncoming);
+	socket.Bind("0.0.0.0", 12345);
+	socket.Listen(Test1_OnListenSocketIncoming);
 
-	new Handle:socket2 = SocketCreate(SOCKET_TCP, OnSocketErrorTrap);
-	SocketConnect(socket2, OnSocketConnectGoal, Test1_OnReceiveSocketReceive, Test1_OnReceiveSocketDisconnect, "127.0.0.1", 12345);
+	Socket socket2 = new Socket(SOCKET_TCP, OnSocketErrorTrap);
+	socket2.Connect(OnSocketConnectGoal, Test1_OnReceiveSocketReceive, Test1_OnReceiveSocketDisconnect, "127.0.0.1", 12345);
 }
 
-public Action:selfTest1Terminate(Handle:timer) {
-	if (goalsReached == 6 && trapsReached == 0) {
+public Action selfTest1Terminate(Handle timer) {
+	if (g_iGoalsReached == 6 && g_iTrapsReached == 0) {
 		PrintToServer("* |socket selftest| ** test #1 passed **");
 		selfTest2();
 	} else {
@@ -83,26 +86,26 @@ public Action:selfTest1Terminate(Handle:timer) {
  * This test is using one socket:
  * - Listening socket on port 12345
  */
-selfTest2() {
-	goalsReached = 0;
-	trapsReached = 0;
+void selfTest2() {
+	g_iGoalsReached = 0;
+	g_iTrapsReached = 0;
 	CreateTimer(4.0, selfTest2Terminate);
 	PrintToServer("* |socket selftest| test #2 running");
 
-	new Handle:socket = SocketCreate(SOCKET_TCP, OnSocketErrorTrap);
+	Socket socket = new Socket(SOCKET_TCP, OnSocketErrorTrap);
 
-	SocketSetOption(socket, SocketReuseAddr, 1);
+	socket.SetOption(SocketReuseAddr, 1);
 
-	SocketBind(socket, "0.0.0.0", 12345);
-	SocketListen(socket, OnSocketIncomingTrap);
+	socket.Bind("0.0.0.0", 12345);
+	socket.Listen(OnSocketIncomingTrap);
 
 	CloseHandle(socket);
 
-	goalsReached++;
+	g_iGoalsReached++;
 }
 
-public Action:selfTest2Terminate(Handle:timer) {
-	if (goalsReached == 1 && trapsReached == 0) {
+public Action selfTest2Terminate(Handle timer) {
+	if (g_iGoalsReached == 1 && g_iTrapsReached == 0) {
 		PrintToServer("* |socket selftest| ** test #2 passed **");
 		selfTest3();
 	} else {
@@ -112,29 +115,29 @@ public Action:selfTest2Terminate(Handle:timer) {
 	return Plugin_Stop;
 }
 
-selfTest3() {
-	goalsReached = 0;
-	trapsReached = 0;
+void selfTest3() {
+	g_iGoalsReached = 0;
+	g_iTrapsReached = 0;
 	CreateTimer(1.0, selfTest3Terminate);
 	PrintToServer("* |socket selftest| test #3 running");
 
-	decl Handle:socket[20];
+	Socket socket[20];
 	
-	for (new count=1; count <= 20; count++) {
-		for (new i=0; i<count; i++) {
-			socket[i] = SocketCreate(SOCKET_TCP, OnSocketErrorTrap);
+	for (int count = 1; count <= 20; count++) {
+		for (int i = 0; i < count; i++) {
+			socket[i] = new Socket(SOCKET_TCP, OnSocketErrorTrap);
 		}
 
-		for (new i=0; i<count; i++) {
+		for (int i = 0; i < count; i++) {
 			CloseHandle(socket[i]);
 		}
 	}
 
-	goalsReached++;
+	g_iGoalsReached++;
 }
 
-public Action:selfTest3Terminate(Handle:timer) {
-	if (goalsReached == 1 && trapsReached == 0) {
+public Action selfTest3Terminate(Handle timer) {
+	if (g_iGoalsReached == 1 && g_iTrapsReached == 0) {
 		PrintToServer("* |socket selftest| ** test #3 passed **");
 		selfTest4();
 	} else {
@@ -152,97 +155,97 @@ public Action:selfTest3Terminate(Handle:timer) {
  * - connect
  * - listen
  */
-selfTest4() {
-	goalsReached = 0;
-	trapsReached = 0;
+void selfTest4() {
+	g_iGoalsReached = 0;
+	g_iTrapsReached = 0;
 	CreateTimer(5.0, selfTest4Terminate);
 	PrintToServer("* |socket selftest| test #4 running");
 
-	new Handle:listenSocket = SocketCreate(SOCKET_TCP, OnSocketErrorTrap);
+	Socket listenSocket = new Socket(SOCKET_TCP, OnSocketErrorTrap);
 
-	SocketSetOption(listenSocket, SocketReuseAddr, 1);
+	listenSocket.SetOption(SocketReuseAddr, 1);
 
-	SocketBind(listenSocket, "0.0.0.0", 12345);
-	SocketListen(listenSocket, Test3_OnListenSocketIncoming);
+	listenSocket.Bind("0.0.0.0", 12345);
+	listenSocket.Listen(Test3_OnListenSocketIncoming);
 
-	decl Handle:socket[8];
+	Socket socket[8];
 	
-	for (new count=1; count <= 8; count++) {
-		for (new i=0; i<count; i++) {
-			socket[i] = SocketCreate(SOCKET_TCP, OnSocketErrorTrap);
+	for (int count = 1; count <= 8; count++) {
+		for (int i = 0; i < count; i++) {
+			socket[i] = new Socket(SOCKET_TCP, OnSocketErrorTrap);
 		}
 
-		for (new i=0; i<count; i++) {
-			SocketConnect(socket[i], OnSocketConnectGoal, OnSocketReceiveTrap, OnSocketDisconnectGoal, "127.0.0.1", 12345);
+		for (int i = 0; i < count; i++) {
+			socket[i].Connect(OnSocketConnectGoal, OnSocketReceiveTrap, OnSocketDisconnectGoal, "127.0.0.1", 12345);
 		}
 	}
 
 	CloseHandle(listenSocket);
 
-	goalsReached++;
+	g_iGoalsReached++;
 }
 
-public Action:selfTest4Terminate(Handle:timer) {
-	if (goalsReached == 109 && trapsReached == 0) {
+public Action selfTest4Terminate(Handle timer) {
+	if (g_iGoalsReached == 109 && g_iTrapsReached == 0) {
 		PrintToServer("* |socket selftest| ** test #4 passed **");
 		selfTest5();
 	} else {
-		PrintToServer("* |socket selftest| ** test #4 failed ** (%d goals of 109)", goalsReached);
+		PrintToServer("* |socket selftest| ** test #4 failed ** (%d goals of 109)", g_iGoalsReached);
 	}
 
 	return Plugin_Stop;
 }
 
-selfTest5() {
+void selfTest5() {
 }
 
 // ------------------------------------- TEST 1 callbacks -------------------------------------
 
-public Test1_OnListenSocketIncoming(Handle:socket, Handle:newSocket, String:remoteIP[], remotePort, any:arg) {
-	SocketSetReceiveCallback(newSocket, OnSocketReceiveTrap);
-	SocketSetDisconnectCallback(newSocket, OnSocketDisconnectTrap);
-	SocketSetErrorCallback(newSocket, OnSocketErrorTrap);
+public void Test1_OnListenSocketIncoming(Socket socket, Socket newSocket, char[] remoteIP, int remotePort, any arg) {
+	newSocket.SetReceiveCallback(OnSocketReceiveTrap);
+	newSocket.SetDisconnectCallback(OnSocketDisconnectTrap);
+	newSocket.SetErrorCallback(OnSocketErrorTrap);
 
-	SocketSend(newSocket, "\x00abc\x00def\x01\x02\x03\x04", 12);
-	SocketSetSendqueueEmptyCallback(newSocket, Test1_OnChildSocketSQEmpty);
+	newSocket.Send("\x00abc\x00def\x01\x02\x03\x04", 12);
+	newSocket.SetSendqueueEmptyCallback(Test1_OnChildSocketSQEmpty);
 
 	PrintToServer("* |socket selftest| goal Test1_OnListenSocketIncoming reached");
-	goalsReached++;
+	g_iGoalsReached++;
 
 	// close listening socket
 	CloseHandle(socket);
 
 	PrintToServer("* |socket selftest| goal Test1_OnListenSocketIncoming - CloseHandle reached");
-	goalsReached++;
+	g_iGoalsReached++;
 }
 
-public Test1_OnChildSocketSQEmpty(Handle:socket, any:arg) {
+public void Test1_OnChildSocketSQEmpty(Socket socket, any arg) {
 	CloseHandle(socket);
 	PrintToServer("* |socket selftest| goal Test1_OnChildSocketSQEmpty reached");
-	goalsReached++;
+	g_iGoalsReached++;
 }
 
-new String:recvBuffer[128];
-new recvBufferPos = 0;
+char g_sRecvBuffer[128];
+int g_iRecvBufferPos = 0;
 
-public Test1_OnReceiveSocketReceive(Handle:socket, String:receiveData[], const dataSize, any:arg) {
+public void Test1_OnReceiveSocketReceive(Socket socket, char[] receiveData, const int dataSize, any arg) {
 	PrintToServer("received %d bytes", dataSize);
 
-	if (recvBufferPos < 512) {
-		for (new i=0; i<dataSize && recvBufferPos<sizeof(recvBuffer); i++, recvBufferPos++) {
-			recvBuffer[recvBufferPos] = receiveData[i];
+	if (g_iRecvBufferPos < 512) {
+		for (int i = 0; i < dataSize && g_iRecvBufferPos < sizeof(g_sRecvBuffer); i++, g_iRecvBufferPos++) {
+			g_sRecvBuffer[g_iRecvBufferPos] = receiveData[i];
 		}
 	}
 }
 
-public Test1_OnReceiveSocketDisconnect(Handle:socket, any:arg) {
+public void Test1_OnReceiveSocketDisconnect(Socket socket, any arg) {
 	PrintToServer("* |socket selftest| goal Test1_OnReceiveSocketDisconnect reached");
-	goalsReached++;
+	g_iGoalsReached++;
 
-	new String:cmp[] = "\x00abc\x00def\x01\x02\x03\x04";
-	new i;
-	for (i=0; i<recvBufferPos && i<12; i++) {
-		if (recvBuffer[i] != cmp[i]) {
+	char cmp[] = "\x00abc\x00def\x01\x02\x03\x04";
+	int i;
+	for (i = 0; i < g_iRecvBufferPos && i < 12; i++) {
+		if (g_sRecvBuffer[i] != cmp[i]) {
 			PrintToServer("comparison failed");
 			break;
 		}
@@ -252,57 +255,57 @@ public Test1_OnReceiveSocketDisconnect(Handle:socket, any:arg) {
 
 	if (i == 12) {
 		PrintToServer("* |socket selftest| goal Test1_OnReceiveSocketDisconnect - i=12 reached");
-		goalsReached++;
+		g_iGoalsReached++;
 	} else {
 		PrintToServer("* |socket selftest| trap Test1_OnReceiveSocketDisconnect - i=%d!=12 triggered", i);
-		trapsReached++;
+		g_iTrapsReached++;
 	}
 }
 
 // ------------------------------------- TEST 3 callbacks -------------------------------------
 
-public Test3_OnListenSocketIncoming(Handle:socket, Handle:newSocket, String:remoteIP[], remotePort, any:arg) {
+public void Test3_OnListenSocketIncoming(Socket socket, Socket newSocket, char[] remoteIP, int remotePort, any arg) {
 	CloseHandle(newSocket);
-	goalsReached++;
+	g_iGoalsReached++;
 }
 
 // ------------------------------------- common callbacks -------------------------------------
 
-public OnSocketConnectGoal(Handle:socket, any:arg) {
-	goalsReached++;
+public void OnSocketConnectGoal(Socket socket, any arg) {
+	g_iGoalsReached++;
 }
-public OnSocketReceiveGoal(Handle:socket, String:receiveData[], const dataSize, any:arg) {
-	goalsReached++;
+public void OnSocketReceiveGoal(Socket socket, char[] receiveData, const int dataSize, any arg) {
+	g_iGoalsReached++;
 }
-public OnSocketDisconnectGoal(Handle:socket, any:arg) {
-	goalsReached++;
+public void OnSocketDisconnectGoal(Socket socket, any arg) {
+	g_iGoalsReached++;
 }
-public OnSocketErrorGoal(Handle:socket, const errorType, const errorNum, any:arg) {
-	goalsReached++;
+public void OnSocketErrorGoal(Socket socket, const int errorType, const int errorNum, any arg) {
+	g_iGoalsReached++;
 }
-public OnSocketIncomingGoal(Handle:socket, Handle:newSocket, String:remoteIP[], remotePort, any:arg) {
-	goalsReached++;
+public void OnSocketIncomingGoal(Socket socket, Socket newSocket, char[] remoteIP, int remotePort, any arg) {
+	g_iGoalsReached++;
 }
 
-public OnSocketConnectTrap(Handle:socket, any:arg) {
+public void OnSocketConnectTrap(Socket socket, any arg) {
 	PrintToServer("* |socket selftest| trap OnSocketConnectTrap triggered");
-	trapsReached++;
+	g_iTrapsReached++;
 }
-public OnSocketReceiveTrap(Handle:socket, String:receiveData[], const dataSize, any:arg) {
+public void OnSocketReceiveTrap(Socket socket, char[] receiveData, const int dataSize, any arg) {
 	PrintToServer("* |socket selftest| trap OnSocketReceiveTrap triggered (%d bytes received)", dataSize);
-	trapsReached++;
+	g_iTrapsReached++;
 }
-public OnSocketDisconnectTrap(Handle:socket, any:arg) {
+public void OnSocketDisconnectTrap(Socket socket, any arg) {
 	PrintToServer("* |socket selftest| trap OnSocketDisconnectTrap triggered");
-	trapsReached++;
+	g_iTrapsReached++;
 }
-public OnSocketErrorTrap(Handle:socket, const errorType, const errorNum, any:arg) {
+public void OnSocketErrorTrap(Socket socket, const int errorType, const int errorNum, any arg) {
 	PrintToServer("* |socket selftest| trap OnSocketErrorTrap triggered (error %d, errno %d)", errorType, errorNum);
-	trapsReached++;
+	g_iTrapsReached++;
 }
-public OnSocketIncomingTrap(Handle:socket, Handle:newSocket, String:remoteIP[], remotePort, any:arg) {
+public void OnSocketIncomingTrap(Socket socket, Socket newSocket, char[] remoteIP, int remotePort, any arg) {
 	PrintToServer("* |socket selftest| trap OnSocketIncomingTrap triggered");
-	trapsReached++;
+	g_iTrapsReached++;
 }
 
 // EOF

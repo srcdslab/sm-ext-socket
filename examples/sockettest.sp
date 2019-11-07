@@ -1,12 +1,14 @@
 // http://forums.alliedmods.net/showpost.php?p=717597&postcount=67
 
-#pragma semicolon 1
 #include <sourcemod>
 #include <socket>
 
+#pragma newdecls required
+#pragma semicolon 1
+
 #define PLUGIN_VERSION "1.0.0"
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
     name = "Socket Test",
     author = "Unknown",
@@ -15,42 +17,42 @@ public Plugin:myinfo =
     url = ""
 }
 
-public OnPluginStart()
+public void OnPluginStart()
 {
-	SocketSetOption(INVALID_HANDLE,DebugMode,1);
+    view_as<Socket>(null).SetOption(DebugMode,1);
     RegAdminCmd("sm_socket_test", CommandTest, ADMFLAG_CONVARS, "test");
 }
 
-public Action:CommandTest(client, args)
+public Action CommandTest(int client, int args)
 {
     // create a new tcp socket
-    new Handle:socket = SocketCreate(SOCKET_TCP, OnSocketError);
+    Socket socket = new Socket(SOCKET_TCP, OnSocketError);
     // open a file handle for writing the result
-    //new Handle:hFile = OpenFile("dl.htm", "wb");
+    //new Socket hFile = OpenFile("dl.htm", "wb");
     // pass the file handle to the callbacks
     //SocketSetArg(socket, hFile);
     // connect the socket
-    SocketConnect(socket, OnSocketConnected, OnSocketReceive, OnSocketDisconnected, "www.sourcemod.net", 80);
+    socket.Connect(OnSocketConnected, OnSocketReceive, OnSocketDisconnected, "www.sourcemod.net", 80);
 
     return Plugin_Handled;
 }
 
-public OnSocketConnected(Handle:socket, any:hFile) {
+public void OnSocketConnected(Socket socket, any hFile) {
     // socket is connected, send the http request
 
-    decl String:requestStr[100];
+    char requestStr[100];
     Format(requestStr, sizeof(requestStr), "GET /%s HTTP/1.0\r\nHost: %s\r\nConnection: close\r\n\r\n", "index.php", "www.sourcemod.net");
     SocketSend(socket, requestStr);
 }
 
-public OnSocketReceive(Handle:socket, String:receiveData[], const dataSize, any:hFile) {
+public void OnSocketReceive(Socket socket, char[] receiveData, const int dataSize, any hFile) {
     // receive another chunk and write it to <modfolder>/dl.htm
     // we could strip the http response header here, but for example's sake we'll leave it in
 
     //WriteFileString(hFile, receiveData, false);
 }
 
-public OnSocketDisconnected(Handle:socket, any:hFile) {
+public void OnSocketDisconnected(Socket socket, any hFile) {
     // Connection: close advises the webserver to close the connection when the transfer is finished
     // we're done here
 
@@ -58,7 +60,7 @@ public OnSocketDisconnected(Handle:socket, any:hFile) {
     CloseHandle(socket);
 }
 
-public OnSocketError(Handle:socket, const errorType, const errorNum, any:hFile) {
+public void OnSocketError(Socket socket, const int errorType, const int errorNum, any hFile) {
     // a socket error occured
 
     LogError("socket error %d (errno %d)", errorType, errorNum);

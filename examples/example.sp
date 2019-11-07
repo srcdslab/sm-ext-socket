@@ -3,7 +3,10 @@
 #include <sourcemod>
 #include <socket>
 
-public Plugin:myinfo = {
+#pragma newdecls required
+#pragma semicolon 1
+
+public Plugin myinfo = {
 	name = "socket example",
 	author = "Player",
 	description = "This example demonstrates downloading a http file with the socket extension",
@@ -11,33 +14,33 @@ public Plugin:myinfo = {
 	url = "http://www.player.to/"
 };
  
-public OnPluginStart() {
+public void OnPluginStart() {
 	// create a new tcp socket
-	new Handle:socket = SocketCreate(SOCKET_TCP, OnSocketError);
+	Socket socket = new Socket(SOCKET_TCP, OnSocketError);
 	// open a file handle for writing the result
-	new Handle:hFile = OpenFile("dl.htm", "wb");
+	File hFile = OpenFile("dl.htm", "wb");
 	// pass the file handle to the callbacks
-	SocketSetArg(socket, hFile);
+	socket.SetArg(hFile);
 	// connect the socket
-	SocketConnect(socket, OnSocketConnected, OnSocketReceive, OnSocketDisconnected, "www.sourcemod.net", 80)
+	socket.Connect(OnSocketConnected, OnSocketReceive, OnSocketDisconnected, "www.sourcemod.net", 80);
 }
 
-public OnSocketConnected(Handle:socket, any:arg) {
+public void OnSocketConnected(Socket socket, any arg) {
 	// socket is connected, send the http request
 
-	decl String:requestStr[100];
+	char requestStr[100];
 	Format(requestStr, sizeof(requestStr), "GET /%s HTTP/1.0\r\nHost: %s\r\nConnection: close\r\n\r\n", "index.php", "www.sourcemod.net");
-	SocketSend(socket, requestStr);
+	socket.Send(requestStr);
 }
 
-public OnSocketReceive(Handle:socket, String:receiveData[], const dataSize, any:hFile) {
+public void OnSocketReceive(Socket socket, char[] receiveData, const int dataSize, any hFile) {
 	// receive another chunk and write it to <modfolder>/dl.htm
 	// we could strip the http response header here, but for example's sake we'll leave it in
 
 	WriteFileString(hFile, receiveData, false);
 }
 
-public OnSocketDisconnected(Handle:socket, any:hFile) {
+public void OnSocketDisconnected(Socket socket, any hFile) {
 	// Connection: close advises the webserver to close the connection when the transfer is finished
 	// we're done here
 
@@ -45,7 +48,7 @@ public OnSocketDisconnected(Handle:socket, any:hFile) {
 	CloseHandle(socket);
 }
 
-public OnSocketError(Handle:socket, const errorType, const errorNum, any:hFile) {
+public void OnSocketError(Socket socket, const int errorType, const int errorNum, any hFile) {
 	// a socket error occured
 
 	LogError("socket error %d (errno %d)", errorType, errorNum);
