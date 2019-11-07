@@ -8,12 +8,5 @@ a.out
 *.ox
 *.a
 *~
-*.obj
-*.log
-*.lib
-*.exp
-*.pdb
-*.tlog
-msvc10/Release/socket.tlog/
+Release/
 Debug/
-msvc10/Release/socket.vcxproj.FileListAbsolute.txt
