@@ -29,7 +29,13 @@ public void OnSocketConnected(Socket socket, any arg) {
 	// socket is connected, send the http request
 
 	char requestStr[100];
-	Format(requestStr, sizeof(requestStr), "GET /%s HTTP/1.0\r\nHost: %s\r\nConnection: close\r\n\r\n", "index.php", "www.sourcemod.net");
+	FormatEx(
+		requestStr,
+		sizeof(requestStr),
+		"GET /%s HTTP/1.0\r\nHost: %s\r\nConnection: close\r\n\r\n",
+		"index.php",
+		"www.sourcemod.net"
+	);
 	socket.Send(requestStr);
 }
 
@@ -37,7 +43,7 @@ public void OnSocketReceive(Socket socket, char[] receiveData, const int dataSiz
 	// receive another chunk and write it to <modfolder>/dl.htm
 	// we could strip the http response header here, but for example's sake we'll leave it in
 
-	WriteFileString(hFile, receiveData, false);
+	hFile.WriteString(receiveData, false);
 }
 
 public void OnSocketDisconnected(Socket socket, any hFile) {
