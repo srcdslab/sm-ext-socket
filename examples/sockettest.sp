@@ -28,9 +28,9 @@ public Action CommandTest(int client, int args)
     // create a new tcp socket
     Socket socket = new Socket(SOCKET_TCP, OnSocketError);
     // open a file handle for writing the result
-    //new Socket hFile = OpenFile("dl.htm", "wb");
+    // new Socket hFile = OpenFile("dl.htm", "wb");
     // pass the file handle to the callbacks
-    //SocketSetArg(socket, hFile);
+    // socket.SetArg(hFile);
     // connect the socket
     socket.Connect(OnSocketConnected, OnSocketReceive, OnSocketDisconnected, "www.sourcemod.net", 80);
 
@@ -42,14 +42,14 @@ public void OnSocketConnected(Socket socket, any hFile) {
 
     char requestStr[100];
     Format(requestStr, sizeof(requestStr), "GET /%s HTTP/1.0\r\nHost: %s\r\nConnection: close\r\n\r\n", "index.php", "www.sourcemod.net");
-    SocketSend(socket, requestStr);
+    socket.Send(requestStr);
 }
 
 public void OnSocketReceive(Socket socket, char[] receiveData, const int dataSize, any hFile) {
     // receive another chunk and write it to <modfolder>/dl.htm
     // we could strip the http response header here, but for example's sake we'll leave it in
 
-    //WriteFileString(hFile, receiveData, false);
+    // hFile.WriteString(receiveData, false);
 }
 
 public void OnSocketDisconnected(Socket socket, any hFile) {
