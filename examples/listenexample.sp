@@ -22,9 +22,9 @@ public void OnPluginStart() {
 	// create a new tcp socket
 	Socket socket = new Socket(SOCKET_TCP, OnSocketError);
 	// bind the socket to all interfaces, port 50000
-	SocketBind(socket, "0.0.0.0", 50000);
+	socket.Bind("0.0.0.0", 50000);
 	// let the socket listen for incoming connections
-	SocketListen(socket, OnSocketIncoming);
+	socket.Listen(OnSocketIncoming);
 }
 
 public void OnSocketIncoming(Socket socket, Socket newSocket, char[] remoteIP, int remotePort, any arg) {
