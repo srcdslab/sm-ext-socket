@@ -223,7 +223,6 @@ methodmap Socket < Handle {
 	 * @param SocketDisconnectCB    dfunc		The disconnect callback
 	 * @param String                hostname	The hostname (or IP) to connect to.
 	 * @param int                   port		The port to connect to.
-	 * @noreturn
 	 */
 	public native void Connect(SocketConnectCB cfunc, SocketReceiveCB rfunc, SocketDisconnectCB dfunc, const char[] hostname, int port);
 
@@ -256,7 +255,6 @@ methodmap Socket < Handle {
 	 *			the data if required.
 	 *
 	 * @param String    data    The data to send.
-	 * @noreturn
 	 */
 	public native void Send(const char[] data, int size = -1);
 
@@ -273,7 +271,6 @@ methodmap Socket < Handle {
 	 * @param String    data        The data to send.
 	 * @param String    hostname    The hostname (or IP) to send to.
 	 * @param int       port        The port to send to.
-	 * @noreturn
 	 */
 	public native void SendTo(const char[] data, int size = -1, const char[] hostname, int port);
 
@@ -293,7 +290,6 @@ methodmap Socket < Handle {
 	 *       (otherwise you already set it in SocketConnect())
 	 *
 	 * @param SocketReceiveCB   rfunc   The receive callback
-	 * @noreturn
 	 */
 	public native void SetReceiveCallback(SocketReceiveCB rfunc);
 
@@ -305,7 +301,6 @@ methodmap Socket < Handle {
 	 * @note the callback is guaranteed to fire
 	 *
 	 * @param SocketDisconnectCB    dfunc   The disconnect callback
-	 * @noreturn
 	 */
 	public native void SetSendqueueEmptyCallback(SocketSendqueueEmptyCB sfunc);
 
@@ -316,7 +311,6 @@ methodmap Socket < Handle {
 	 *       (otherwise you already set it in SocketConnect())
 	 *
 	 * @param SocketDisconnectCB    dfunc   The disconnect callback
-	 * @noreturn
 	 */
 	public native void SetDisconnectCallback(SocketDisconnectCB dfunc);
 
@@ -327,7 +321,6 @@ methodmap Socket < Handle {
 	 *       (otherwise you already set it in SocketCreate())
 	 *
 	 * @param SocketErrorCB efunc   The error callback
-	 * @noreturn
 	 */
 	public native void SetErrorCallback(SocketErrorCB efunc);
 
@@ -335,7 +328,6 @@ methodmap Socket < Handle {
 	 * Sets the argument being passed to callbacks
 	 *
 	 * @param any       arg     The argument to set
-	 * @noreturn
 	 */
 	public native void SetArg(any arg);
 
