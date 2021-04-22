@@ -31,4 +31,5 @@ environment, if you haven't already)
         - If an existing build is present with a different configuration, use `-a` to force
         rebuilding the libraries.
 2. `cd build/` and run `../configure.py --sm-path ${SM_PATH} --boost-path ${BOOST_PATH}`
+    - example: `python ../configure.py --sm-path "G:/Documents/SMBuild/sourcemod" --boost-path "G:/Documents/CPPLibs/boost_1_71_0/" --enable-optimize 1`
 3. `ambuild` as normal.
