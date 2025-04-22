@@ -19,14 +19,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-24.04]
         sourcemod-version: [1.11-dev]
         libboost-version: [boost-1.82.0]
         python-version: ['3.10']
         include:
-          - os: ubuntu-20.04
-            compiler_cc: clang
-            compiler_cxx: clang++
+          - os: ubuntu-24.04
+            compiler_cc: clang-14
+            compiler_cxx: clang++-14
 
     steps:
       - name: Install Linux packages
@@ -41,12 +41,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: extension
 
       - name: Checkout SourceMod ${{ matrix.sourcemod-version }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: alliedmodders/sourcemod
           ref: ${{ matrix.sourcemod-version }}
@@ -94,7 +94,7 @@ jobs:
           ambuild
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}
           path: extension/build/package
@@ -107,7 +107,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Package
         run: |
