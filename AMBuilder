@@ -21,9 +21,13 @@ for cxx in builder.targets:
   elif cxx.family == 'msvc':
     cxx.cxxflags += ['/GR-']
 
+  # Boost built per arch: build/ (x86) and build64/ (x86_64); a single-arch build may only have build/.
+  boost_lib = os.path.join(SM.libboost_root, 'build64' if cxx.target.arch == 'x86_64' else 'build', 'lib')
+  if not os.path.isdir(boost_lib):
+    boost_lib = os.path.join(SM.libboost_root, 'build', 'lib')
   binary.compiler.postlink += [
-    os.path.join(SM.libboost_root, 'build', 'lib', 'libboost_thread.a'),
-    os.path.join(SM.libboost_root, 'build', 'lib', 'libboost_system.a'),
+    os.path.join(boost_lib, 'libboost_thread.a'),
+    os.path.join(boost_lib, 'libboost_system.a'),
   ]
 
   binary.sources += [
