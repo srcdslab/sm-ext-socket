@@ -10,7 +10,7 @@
 /* Basic information exposed publically */
 #define SMEXT_CONF_NAME			"Socket"
 #define SMEXT_CONF_DESCRIPTION	"Socket extension for SourceMod"
-#define SMEXT_CONF_VERSION		"3.0.2"
+#define SMEXT_CONF_VERSION		"3.1.0"
 #define SMEXT_CONF_AUTHOR		"Player"
 #define SMEXT_CONF_URL			"http://www.player.to/"
 #define SMEXT_CONF_LOGTAG		"SOCKET"

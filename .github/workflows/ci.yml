@@ -80,8 +80,8 @@ jobs:
         working-directory: libboost
         run: |
           ./bootstrap.sh --prefix=build --with-libraries=thread,system
-          ./b2 -j8 cflags=-m32 cxxflags=-m32 address-model=32 threading=multi architecture=x86 instruction-set=i686 link=static runtime-link=static
-          ./b2 install
+          ./b2 -j8 cflags=-m32 cxxflags=-m32 address-model=32 threading=multi architecture=x86 instruction-set=i686 link=static runtime-link=static install
+          ./b2 -j8 --build-dir=bin64 --prefix=build64 cflags=-fPIC cxxflags=-fPIC address-model=64 threading=multi architecture=x86 link=static runtime-link=static install
 
       - name: Build
         working-directory: extension
@@ -90,7 +90,7 @@ jobs:
           BREAKPAD_SYMBOL_SERVER: ${{ secrets.BREAKPAD_SYMBOL_SERVER }}
         run: |
           mkdir build && cd build
-          python ../configure.py --enable-optimize --symbol-files
+          python ../configure.py --enable-optimize --symbol-files --targets=x86,x86_64
           ambuild
 
       - name: Upload artifact
