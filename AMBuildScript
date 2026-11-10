@@ -446,7 +446,8 @@ class ExtensionConfig(object):
     gameconfigs_header = os.path.join(sm_public_path, 'IGameConfigs.h')
 
     if binary.compiler.like('msvc'):
-      binary.compiler.cflags += ['/FI' + gameconfigs_header]
+      # C++ only: AMBuild also preprocesses version.rc with cflags, in C mode.
+      binary.compiler.cxxflags += ['/FI' + gameconfigs_header]
     else:
       binary.compiler.cflags += ['-include', gameconfigs_header]
 
