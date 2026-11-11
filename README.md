@@ -5,31 +5,30 @@ Get to the [AlliedModders forum thread][socket-am] for more information.
 [socket-git]: http://player.to/gitweb/index.cgi?p=sm-ext-socket.git
 [socket-am]: https://forums.alliedmods.net/showthread.php?t=67640
 
-## Building with AMBuild
+## Building
 
-### Dependencies
-- [SourceMod][] toolchain (follow the instructions on [Building SourceMod][] to set up your
-environment, if you haven't already)
-- [Boost][]
+CI builds Linux and Windows packages (x86 and x86_64) against SourceMod master, 1.12-dev and
+1.13.0.7427 with the shared [srcdslab CI][ci-workflows] and [sm-ext-common][].
 
-[SourceMod]: https://github.com/alliedmodders/sourcemod/
-[Building SourceMod]: https://wiki.alliedmods.net/Building_SourceMod
-[Boost]: http://www.boost.org/
+[ci-workflows]: https://github.com/srcdslab/ci-workflows
+[sm-ext-common]: https://github.com/srcdslab/sm-ext-common
 
-### Configuration
+To build locally:
 
-1. Configure Boost.
-    - Download the release archive from the site and extract the archive to a location
-    `${BOOST_PATH}`.  Set that location as your working directory.
-    - Run the `bootstrap` script for your platform to build `b2`.  Pass `--with-toolset` with
-    either `msvc`, `gcc`, or `clang` depending on what compiler you plan on building with.
-    - Invoke `b2 define=BOOST_TYPE_INDEX_FORCE_NO_RTTI_COMPATIBILITY address-model=32 runtime-link=static link=static --build-dir=build/x86 --stagedir=stage/x86 --with-thread --with-date_time --with-regex`
-    to build the required libraries in mixed RTTI mode (boost will use RTTI, the extension will
-    not).  The configuration should build fully static x86 libraries on both Withdows and Linux,
-    with versioned filenames on the former and system names on the latter (which allows us to
-    use `-lboost_*` without additional extensions when setting up the link flags on `ambuild`).
-        - If an existing build is present with a different configuration, use `-a` to force
-        rebuilding the libraries.
-2. `cd build/` and run `../configure.py --sm-path ${SM_PATH} --boost-path ${BOOST_PATH}`
-    - example: `python ../configure.py --sm-path "G:/Documents/SMBuild/sourcemod" --boost-path "G:/Documents/CPPLibs/boost_1_71_0/" --enable-optimize 1`
-3. `ambuild` as normal.
+1. Clone with submodules (`git clone --recursive`, or `git submodule update --init`).
+2. Build the static [Boost][] `thread` and `system` libraries (see `.github/workflows/ci.yml`
+   for the exact `b2` commands) and lay them out as `boost/boost-<platform>/include/boost` and
+   `boost/boost-<platform>/lib/<arch>/`, with `<platform>` `linux` or `windows` and `<arch>`
+   `x86` or `x86_64`.
+3. Build with [AMBuild][]:
+   ```sh
+   mkdir build && cd build
+   python ../sm-ext-common/configure.py --ext-root .. --sdks css --targets x86,x86_64 \
+     --sm-path <sourcemod> --mms-path <metamod-source> --hl2sdk-root <hl2sdk folder> \
+     --hl2sdk-manifests-path <hl2sdk-manifests> --enable-optimize
+   ambuild
+   ```
+   The package is written to `build/package`.
+
+[Boost]: https://www.boost.org/
+[AMBuild]: https://github.com/alliedmodders/ambuild

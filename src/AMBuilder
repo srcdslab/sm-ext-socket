@@ -1,0 +1,65 @@
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
+import os
+
+projectName = 'socket'
+
+project = builder.LibraryProject(projectName)
+project.sources += [
+  os.path.join(Extension.ext_root, 'src', 'Extension.cpp'),
+  os.path.join(Extension.ext_root, 'src', 'Socket.cpp'),
+  os.path.join(Extension.ext_root, 'src', 'SocketHandler.cpp'),
+  os.path.join(Extension.ext_root, 'src', 'Callback.cpp'),
+  os.path.join(Extension.ext_root, 'src', 'CallbackHandler.cpp'),
+  os.path.join(Extension.sm_root, 'public', 'smsdk_ext.cpp'),
+]
+
+# Boost thread/system, one folder per platform (CI downloads them there):
+# boost/boost-<platform>/include for the headers, boost/boost-<platform>/lib/<arch> for the static libraries.
+def BoostRoot(platform):
+  root = os.path.join(Extension.ext_root, 'boost', 'boost-' + platform)
+  if not os.path.isdir(os.path.join(root, 'include', 'boost')):
+    raise Exception('Could not find Boost headers in {0}'.format(os.path.join(root, 'include')))
+  return root
+
+for sdk_name in Extension.sdks:
+  sdk = Extension.sdks[sdk_name]
+  if sdk['name'] in ['mock']:
+    continue
+
+  for cxx in builder.targets:
+    if not cxx.target.arch in sdk['platforms'][cxx.target.platform]:
+      continue
+
+    binary = Extension.HL2ExtConfig(project, builder, cxx, projectName + '.ext', sdk)
+
+    boost_root = BoostRoot(cxx.target.platform)
+    boost_include = os.path.join(boost_root, 'include')
+    boost_lib = os.path.join(boost_root, 'lib', cxx.target.arch)
+
+    if cxx.like('gcc'):
+      # System include: Boost's own warnings must not trip -Werror.
+      binary.compiler.cxxflags += ['-isystem', boost_include, '-fno-rtti']
+    else:
+      binary.compiler.cxxincludes += [boost_include]
+
+    if cxx.target.platform == 'windows':
+      binary.compiler.defines += [
+        # Boost is linked by path below; its auto-link pragmas would ask for versioned file names.
+        'BOOST_ALL_NO_LIB',
+        # windows.h comes before Boost in some files and after it in others: keep Asio consistent.
+        '_WIN32_WINNT=0x0601',
+      ]
+      boost_ext = '.lib'
+    else:
+      boost_ext = '.a'
+
+    binary.compiler.postlink += [
+      os.path.join(boost_lib, 'libboost_thread' + boost_ext),
+      os.path.join(boost_lib, 'libboost_system' + boost_ext),
+    ]
+
+    if cxx.target.platform == 'linux':
+      binary.compiler.linkflags += ['-static-libstdc++']
+      binary.compiler.postlink += ['-lpthread', '-lrt']
+
+Extension.extensions += builder.Add(project)
