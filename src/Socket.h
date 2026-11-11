@@ -7,7 +7,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-#include "sdk/smsdk_ext.h"
+#include "smsdk_ext.h"
 #include "Define.h"
 
 class SocketHandler;

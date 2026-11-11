@@ -1,7 +1,7 @@
 #ifndef INC_SEXT_EXTENSION_H
 #define INC_SEXT_EXTENSION_H
 
-#include "sdk/smsdk_ext.h"
+#include "smsdk_ext.h"
 #include "SocketHandler.h"
 
 class Extension : public SDKExtension, public IHandleTypeDispatch {
