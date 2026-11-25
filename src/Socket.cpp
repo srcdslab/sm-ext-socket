@@ -34,9 +34,12 @@ Socket<SocketType>::Socket(SM_SocketType st,
 
 template <class SocketType>
 Socket<SocketType>::~Socket() {
+	// close(error_code): the throwing overload would call std::terminate from a destructor.
+	boost::system::error_code closeError;
+
 	if (socket) {
 		boost::mutex::scoped_lock l(socketMutex);
-		socket->close();
+		socket->close(closeError);
 		
 		delete socket;
 		socket = NULL;
@@ -44,7 +47,7 @@ Socket<SocketType>::~Socket() {
 
 	if (tcpAcceptor) {
 		boost::mutex::scoped_lock l(*tcpAcceptorMutex);
-		tcpAcceptor->close();
+		tcpAcceptor->close(closeError);
 		
 		delete tcpAcceptor;
 		tcpAcceptor = NULL;
@@ -292,7 +295,9 @@ void Socket<SocketType>::ConnectPostConnectHandler(typename SocketType::resolver
 			boost::mutex::scoped_lock l(socketMutex);
 
 			if (socket) {
-				socket->close();
+				// io_service thread: an exception here would end the thread with std::terminate.
+				boost::system::error_code closeError;
+				socket->close(closeError);
 			}
 		} // ~lock
 
@@ -391,16 +396,22 @@ void Socket<tcp>::ListenIncomingHandler(tcp::socket* newAsioSocket, const boost:
 		if (tcpAcceptor) {
 			Socket<tcp>* newSocket = socketHandler.CreateSocket<tcp>(sm_sockettype);
 			newSocket->socket = newAsioSocket;
-			Callback* incomingCallback = new Callback(CallbackEvent_Incoming, this, newSocket, newAsioSocket->remote_endpoint());
+			// remote_endpoint() throws (ENOTCONN) when the peer closed or reset the connection
+			// before we got here, a port scan does it: on the io_service thread nothing catches
+			// it and std::terminate kills the server. Drop such a connection instead.
+			boost::system::error_code endpointError;
+			tcp::endpoint remoteEndpoint = newAsioSocket->remote_endpoint(endpointError);
+			Callback* incomingCallback = endpointError ? NULL : new Callback(CallbackEvent_Incoming, this, newSocket, remoteEndpoint);
 
-			if (incomingCallback->IsValid()) {
+			if (incomingCallback && incomingCallback->IsValid()) {
 				callbackHandler.AddCallback(incomingCallback);
 
 				newSocket->ReceiveHandler(new char[16384], 16384, 0, boost::system::errc::make_error_code(boost::system::errc::success), new boost::shared_lock<boost::shared_mutex>(newSocket->handlerMutex));
 			} else {
-				// This listener is already out of socketList (its handle is being destroyed),
-				// so no plugin will ever get a handle for this connection: close it now rather
-				// than leave it open in socketList until the extension unloads (#12).
+				// The peer is already gone, or this listener is already out of socketList (its
+				// handle is being destroyed) so no plugin will ever get a handle for this
+				// connection: close it now rather than leave it open in socketList until the
+				// extension unloads (#12).
 				delete incomingCallback;
 				socketHandler.DestroySocket(socketHandler.GetSocketWrapper(newSocket));
 			}
@@ -429,15 +440,17 @@ template <class SocketType>
 bool Socket<SocketType>::Send(const std::string& data, bool async) {
 	char* buf = NULL;
 	boost::shared_lock<boost::shared_mutex>* handlerLock = NULL;
+	bool queued = false;
 
 	try {
 		if (!socket && !tcpAcceptor) throw std::logic_error("can't send without connection");
 
 		if (async) {
-			char* buf = new char[data.length()];
+			buf = new char[data.length()];
 			memcpy(buf, data.data(), data.length());
 
 			sendQueueLength++;
+			queued = true;
 
 			handlerLock = new boost::shared_lock<boost::shared_mutex>(handlerMutex);
 
@@ -452,7 +465,7 @@ bool Socket<SocketType>::Send(const std::string& data, bool async) {
 											   boost::asio::placeholders::error,
 											   handlerLock));
 			} else {
-				throw new std::logic_error("Operation cancelled.");
+				throw std::logic_error("Operation cancelled.");
 			}
 		} else {
 			boost::mutex::scoped_lock l(socketMutex);
@@ -466,6 +479,7 @@ bool Socket<SocketType>::Send(const std::string& data, bool async) {
 
 		return true;
 	} catch (std::exception&) {
+		if (queued) sendQueueLength--;
 		if (buf) delete[] buf;
 		if (handlerLock) delete handlerLock;
 	}
@@ -502,6 +516,7 @@ bool Socket<udp>::SendTo(const std::string& data, const char* hostname, uint16_t
 	char* buf = NULL;
 	udp::resolver* resolver = NULL;
 	boost::shared_lock<boost::shared_mutex>* handlerLock = NULL;
+	bool queued = false;
 
 	try {
 		char sPort[6];
@@ -514,6 +529,7 @@ bool Socket<udp>::SendTo(const std::string& data, const char* hostname, uint16_t
 			memcpy(buf, data.data(), data.length());
 
 			sendQueueLength++;
+			queued = true;
 
 			resolver = new udp::resolver(*socketHandler.ioService);
 			handlerLock = new boost::shared_lock<boost::shared_mutex>(handlerMutex);
@@ -543,6 +559,7 @@ bool Socket<udp>::SendTo(const std::string& data, const char* hostname, uint16_t
 
 		return true;
 	} catch (std::exception&) {
+		if (queued) sendQueueLength--;
 		if (resolver) delete resolver;
 		if (buf) delete[] buf;
 		if (handlerLock) delete handlerLock;
