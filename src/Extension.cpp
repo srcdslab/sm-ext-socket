@@ -32,7 +32,11 @@ bool Extension::SDK_OnLoad(char *error, size_t err_max, bool late) {
 
 void Extension::SDK_OnUnload() {
 	smutils->RemoveGameFrameHook(&GameFrame);
-	handlesys->RemoveType(socketHandleType, NULL);
+	// The type was created with myself->GetIdentity(): RemoveType() refuses any other identity, and
+	// with NULL it did nothing. The plugins' socket handles then outlived Shutdown(), which deleted
+	// their SocketWrappers, and SourceMod freed them again when it unloaded the dependent plugins
+	// right after (double free, crash on `sm exts unload` with a socket plugin loaded).
+	handlesys->RemoveType(socketHandleType, myself->GetIdentity());
 
 	socketHandler.Shutdown();
 }
