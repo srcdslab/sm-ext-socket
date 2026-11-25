@@ -391,9 +391,19 @@ void Socket<tcp>::ListenIncomingHandler(tcp::socket* newAsioSocket, const boost:
 		if (tcpAcceptor) {
 			Socket<tcp>* newSocket = socketHandler.CreateSocket<tcp>(sm_sockettype);
 			newSocket->socket = newAsioSocket;
-			callbackHandler.AddCallback(new Callback(CallbackEvent_Incoming, this, newSocket, newAsioSocket->remote_endpoint()));
+			Callback* incomingCallback = new Callback(CallbackEvent_Incoming, this, newSocket, newAsioSocket->remote_endpoint());
 
-			newSocket->ReceiveHandler(new char[16384], 16384, 0, boost::system::errc::make_error_code(boost::system::errc::success), new boost::shared_lock<boost::shared_mutex>(newSocket->handlerMutex));
+			if (incomingCallback->IsValid()) {
+				callbackHandler.AddCallback(incomingCallback);
+
+				newSocket->ReceiveHandler(new char[16384], 16384, 0, boost::system::errc::make_error_code(boost::system::errc::success), new boost::shared_lock<boost::shared_mutex>(newSocket->handlerMutex));
+			} else {
+				// This listener is already out of socketList (its handle is being destroyed),
+				// so no plugin will ever get a handle for this connection: close it now rather
+				// than leave it open in socketList until the extension unloads (#12).
+				delete incomingCallback;
+				socketHandler.DestroySocket(socketHandler.GetSocketWrapper(newSocket));
+			}
 
 			tcp::socket* nextAsioSocket = new tcp::socket(*socketHandler.ioService);
 
