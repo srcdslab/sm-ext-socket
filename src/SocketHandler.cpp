@@ -43,13 +43,24 @@ SocketHandler::~SocketHandler() {
 }
 
 void SocketHandler::Shutdown() {
-	boost::mutex::scoped_lock l(socketListMutex);
+	// Delete the sockets one at a time, outside socketListMutex. ~Socket waits for the pending
+	// io_service handlers of that socket, and a handler of another socket may be blocked on
+	// socketListMutex (Callback -> GetSocketWrapper, or CreateSocket on accept) while it keeps
+	// the only io_service thread busy: holding the lock here deadlocked the server on shutdown.
+	for (;;) {
+		SocketWrapper* sw;
 
-	for (std::deque<SocketWrapper*>::iterator it=socketList.begin(); it!=socketList.end(); it++) {
-		delete *it;
+		{ // lock
+			boost::mutex::scoped_lock l(socketListMutex);
+
+			if (socketList.empty()) break;
+
+			sw = socketList.front();
+			socketList.pop_front();
+		} // ~lock
+
+		delete sw;
 	}
-
-	socketList.clear();
 
 	if (ioServiceProcessingThreadInitialized) StopProcessing();
 }
